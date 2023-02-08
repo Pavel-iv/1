@@ -1,0 +1,49 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: stage
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: cr.yandex/crpie94if7p5bh3bbf51/diploma-web-app_frontend:0.1.1
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: stage
+spec:
+  ports:
+  # Порт сетевого балансировщика, на котором будут обслуживаться пользовательские запросы.
+  - port: 80
+    name: plaintext
+    # Порт контейнера, на котором доступно приложение.
+    targetPort: 8080
+  # Метки селектора, использованные в шаблоне подов при создании объекта Deployment.
+  selector:
+    app: frontend
+  type: LoadBalancer
+  

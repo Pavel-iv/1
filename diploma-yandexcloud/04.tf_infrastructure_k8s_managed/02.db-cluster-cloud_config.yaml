@@ -1,0 +1,32 @@
+#cloud-config
+ssh_pwauth: no
+users:
+  - name: dotsenkois
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL    
+    passwd: $6$rounds=4096$2lnfl.BvbQyhFZDJ$uSLTNFXlqGV0kf6nIiE3nMJHJ.XPch5WF5OWg2T5tw8qSw3yNvNTMtKepItJowUM.emgaYd1baoyoLQI6GPgJ/
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC3bXWZ0ilGnNS1Q1VMO06WScGKTIDUV0jlIdT88h+rnN3WBayAofWpIT/KViArFRk4/IKkghwPHllos9MF2UPEiUz9qdGjxJdSxey6WWVwCf1GmENQivUBklSZX1MP3SThwFk1TRpWnrW/+od0fpRZbTRJLuLKWUhDacVe7xNTVWp+LhnITKEzkAqOdizkLoXeI2+GkJnrjnkWU0H4yno1US97mFnQh0A/R7Say16Q5KXUtex5caoShOsOeKcGj71OkBoKWRMN5AZ+kvgk+FOJcZ3YF8245dtATmBPejlJsjv4xHaCtg48kJfRKRzcJPZcZOM0hplTkMzcUA2Bav438kDZuTFE8nM2PlDLRuTOdeUHh4+nWxEl3cjzN2+0rh5mRDClQMgnt1oTyCqIASXr5rm6m3NKJrz441SOyi0ZFHt2G7qEJg3GQhNu5OjnSYeDTzK0kC9ztytC/rMyVMmIkz7v4O/4SCQuj0H65uLaVtVKYUj0VKinAS9fm8tFDXE= dotsenkois@dotsenkois-vm
+    primary_group: dotsenkois
+    groups: root
+packages_update: true
+packages_upgrade: true
+runcmd:
+  - sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+  - wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+  - sudo apt-get update
+  - sudo apt-get -y purge postgresql-15
+  - sudo apt-get -y install postgresql-14 libpq-dev
+  - sudo wget https://raw.githubusercontent.com/dotsenkois/diploma-web-app/main/docker/postgres/my.conf -O /etc/postgresql/14/main/conf.d/my.conf
+  - wget https://raw.githubusercontent.com/dotsenkois/diploma-web-app/main/docker/postgres/init.sql -O /tmp/init.sql
+  - sudo --user=postgres psql < /tmp/init.sql
+  - sudo echo "host    netology     dotsenkois             192.168.10.0/24            scram-sha-256 " >> /etc/postgresql/14/main/pg_hba.conf
+  - sudo echo "host    netology     dotsenkois             51.250.14.227/32            scram-sha-256 " >> /etc/postgresql/14/main/pg_hba.conf
+  - sudo systemctl stop postgresql@15-main.service
+  - sudo systemctl restart postgresql@14-main.service
+  - sudo systemctl restart postgresql.service
+
+  - sudo ufw allow 22/tcp && sudo ufw allow 5432/tcp && sudo ufw enable
+  
+packages:
+  net-tools

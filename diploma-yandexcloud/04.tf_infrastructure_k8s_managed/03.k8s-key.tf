@@ -1,0 +1,14 @@
+resource "yandex_kms_symmetric_key" "key-a" {
+  name              = "netology-key"
+  description       = "Ключ для шифрования k8s cluster"
+  default_algorithm = "AES_128"
+  rotation_period   = "8760h"
+  lifecycle {
+    prevent_destroy = false
+  }
+  }
+
+  resource "yandex_iam_service_account_static_access_key" "k8s-sa-static-key" {
+  service_account_id = yandex_iam_service_account.k8s-sa.id
+  description        = "for as k8s admin"
+}

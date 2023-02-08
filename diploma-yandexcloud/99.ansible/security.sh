@@ -1,0 +1,1 @@
+ANSIBLE_FORCE_COLOR=1 -i ../05.ansible/inventory/inventory.yaml ../05.ansible/playbook/stage/02.security.yaml
